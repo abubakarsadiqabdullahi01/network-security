@@ -41,7 +41,6 @@ export const adminRoutes = [
     "/server",
     "/settings",
     "/url",
-    
     "/file",
 ];
 
@@ -53,7 +52,6 @@ export const userRoutes = [
     "/dashboard",
     "/server",
     "/url",
-    
     "/file",
     "/settings",
 ];

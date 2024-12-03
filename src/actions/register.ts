@@ -25,12 +25,19 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
         return { error: "Email already in use!" }; // Consistent messaging
     }
 
+     // Check if this is the first user
+     const userCount = await prisma.user.count();
+
+      // Assign role based on user count
+    const role = userCount === 0 ? "ADMIN" : "USER";
+
     // Create new user
     await prisma.user.create({
         data: {
             name,
             email,
-            password: hashPassword
+            password: hashPassword,
+            role
         }
     });
 

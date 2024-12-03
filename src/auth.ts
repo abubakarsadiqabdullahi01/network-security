@@ -44,16 +44,27 @@ export const {
         /**
          * JWT callback to handle token enrichment with user role.
          */
-        async jwt({ token }) {
-            if (!token.sub) return token;
-
-            const existingUser = await getUserById(token.sub);
-
-            if (!existingUser) return token;
-
-            token.role = existingUser.role;
+        async jwt({ token, account, user }) {
+            if (user) {
+                // Check if the user is new
+                const userCount = await prisma.user.count();
+        
+                if (userCount === 0) {
+                    // First user becomes ADMIN
+                    await prisma.user.update({
+                        where: { id: user.id },
+                        data: { role: UserRole.ADMIN },
+                    });
+        
+                    token.role = UserRole.ADMIN;
+                } else {
+                    token.role = user.role || UserRole.USER;
+                }
+            }
+        
             return token;
         }
+        
     },
     adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" },
