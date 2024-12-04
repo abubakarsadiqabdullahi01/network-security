@@ -43,6 +43,7 @@ export async function POST(req: NextRequest) {
       },
     })
 
+    console.log('VirusTotal API Response:', response.data)
     return NextResponse.json(response.data)
   } catch (error) {
     console.error('Error scanning file:', error)
@@ -52,4 +53,3 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Error scanning file' }, { status: 500 })
   }
 }
-
