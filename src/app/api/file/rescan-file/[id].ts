@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import axios from 'axios'
 
-const API_KEY = process.env.VIRUSTOTAL_API_KEY
+const API_KEY = const API_KEY = process.env.VIRUSTOTAL_API_KEY || "e3c902121a250951e8fc66f8fce319d55eb54eebc1783b864d1a4d5596474775";
 const BASE_URL = 'https://www.virustotal.com/api/v3'
 
 const virusTotalApi = axios.create({
