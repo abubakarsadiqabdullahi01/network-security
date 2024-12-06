@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
-import authConfig from "@/auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/db";
 import { getUserById } from "./data/user";
+import authConfig from "@/auth.config";
 
 export enum UserRole {
     ADMIN = "ADMIN",
@@ -15,21 +15,21 @@ export const {
     signIn,
     signOut
 } = NextAuth({
-    pages:{
+    adapter: PrismaAdapter(prisma),
+    pages: {
         signIn: "/auth/login",
         error: "/auth/error"
     },
     events: {
-        async linkAccount({user}){
+        async linkAccount({user}) {
             await prisma.user.update({
-                where: {id: user.id},
-                data: {emailVerified: new Date()}
+                where: { id: user.id },
+                data: { emailVerified: new Date() }
             })
         }
     },
     callbacks: {
         async session({ session, token }) {
-
             if (token.sub && session.user) {
                 session.user.id = token.sub;
             }
@@ -40,33 +40,18 @@ export const {
 
             return session;
         },
+        async jwt({ token }) {
+            if (!token.sub) return token;
 
-        /**
-         * JWT callback to handle token enrichment with user role.
-         */
-        async jwt({ token, account, user }) {
-            if (user) {
-                // Check if the user is new
-                const userCount = await prisma.user.count();
-        
-                if (userCount === 0) {
-                    // First user becomes ADMIN
-                    await prisma.user.update({
-                        where: { id: user.id },
-                        data: { role: UserRole.ADMIN },
-                    });
-        
-                    token.role = UserRole.ADMIN;
-                } else {
-                    token.role = user.role || UserRole.USER;
-                }
-            }
-        
+            const existingUser = await getUserById(token.sub);
+
+            if (!existingUser) return token;
+
+            token.role = existingUser.role as UserRole;
             return token;
         }
-        
     },
-    adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" },
     ...authConfig
 });
+
